@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lead Gen Simulator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-base: #0f172a;
+            --bg-panel: #1e293b;
+            --bg-card: #334155;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent-blue: #38bdf8;
+            --accent-green: #34d399;
+            --accent-red: #f87171;
+            --accent-yellow: #fbbf24;
+            --border-color: #475569;
+        }
+
+        * { box-sizing: border-box; }
+
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: var(--bg-base); 
+            color: var(--text-main); 
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* ── Header ── */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 30px;
+            background: var(--bg-panel);
+            border-bottom: 1px solid var(--border-color);
+        }
+        .navbar h1 { margin: 0; font-size: 20px; color: var(--accent-blue); }
+        .nav-btn {
+            background: var(--bg-card);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+        .nav-btn:hover { background: #475569; }
+
+        /* ── Main Layout ── */
+        .main-container {
+            display: grid;
+            grid-template-columns: 280px 1fr 320px;
+            gap: 20px;
+            padding: 20px;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .panel {
+            background: var(--bg-panel);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .panel-title {
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            margin-top: 0;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+            font-weight: 600;
+        }
+
+        /* ── Dashboard (Left) ── */
+        .stat-block {
+            background: var(--bg-card);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        .stat-val { font-size: 24px; font-weight: 700; margin-bottom: 4px; }
+        .stat-label { font-size: 12px; color: var(--text-muted); text-transform: uppercase; }
+        .money { color: var(--accent-green); }
+        .day { color: var(--accent-blue); }
+
+        .motivation-bar-container {
+            background: var(--bg-base);
+            border-radius: 20px;
+            height: 12px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+        .motivation-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-red), var(--accent-yellow), var(--accent-green));
+            width: 100%;
+            transition: width 0.3s ease;
+        }
+
+        .funnel-list { list-style: none; padding: 0; margin: 0; }
+        .funnel-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            border-bottom: 1px solid var(--bg-base);
+            font-size: 13px;
+        }
+        .funnel-item span:last-child { font-weight: 600; color: var(--accent-blue); }
+
+        /* ── Command Center (Center) ── */
+        .pacing-section {
+            background: var(--bg-card);
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .pacing-header {
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;
+        }
+        
+        .hours-badge {
+            background: rgba(56, 189, 248, 0.2);
+            color: var(--accent-blue);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 14px;
+        }
+        .hours-badge.warning { background: rgba(251, 191, 36, 0.2); color: var(--accent-yellow); }
+        .hours-badge.danger { background: rgba(248, 113, 113, 0.2); color: var(--accent-red); }
+
+        .slider-container { margin: 10px 0; }
+        input[type="range"] { width: 100%; accent-color: var(--accent-blue); }
+        .pacing-desc { font-size: 13px; color: var(--text-muted); text-align: center; margin-top: 5px; }
+
+        .schedule-header {
+            display: flex; justify-content: space-between; align-items: center;
+            background: var(--bg-base);
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border: 1px solid var(--border-color);
+        }
+        .hours-remaining { font-size: 16px; font-weight: 600; }
+        .hours-remaining span { color: var(--accent-blue); font-size: 20px; }
+        
+        .actions-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+        .action-card {
+            background: var(--bg-card);
+            border: 2px solid transparent;
+            border-radius: 8px;
+            padding: 10px 12px;
+            text-align: left;
+            position: relative;
+            display: flex; flex-direction: column; justify-content: space-between;
+        }
+        .action-card.active { border-color: var(--accent-blue); background: rgba(56, 189, 248, 0.05); }
+        .action-title { font-weight: 600; font-size: 13px; margin-bottom: 2px; }
+        .action-desc { font-size: 10px; color: var(--text-muted); line-height: 1.3; margin-bottom: 8px; }
+        .action-cost { 
+            position: absolute; top: 10px; right: 10px; 
+            font-size: 10px; font-weight: 600; color: var(--accent-yellow);
+        }
+        
+        .hour-allocator {
+            display: flex; justify-content: space-between; align-items: center;
+            background: var(--bg-base); border-radius: 6px; padding: 4px;
+        }
+        .alloc-btn {
+            background: var(--bg-panel); color: #fff; border: 1px solid var(--border-color);
+            width: 24px; height: 24px; border-radius: 4px; font-weight: bold; cursor: pointer;
+            display: flex; justify-content: center; align-items: center; font-size: 12px;
+        }
+        .alloc-btn:hover { background: #475569; }
+        .alloc-btn:active { background: var(--accent-blue); border-color: var(--accent-blue); }
+        .alloc-val { font-weight: 600; font-size: 13px; color: var(--accent-blue); }
+
+        .end-day-btn {
+            background: var(--accent-blue);
+            color: #fff;
+            border: none;
+            padding: 16px;
+            font-size: 16px;
+            font-weight: 700;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+            width: 100%;
+            margin-top: auto;
+        }
+        .end-day-btn:hover { background: #0284c7; }
+        .end-day-btn:active { transform: scale(0.98); }
+
+        /* ── Event Log (Right) ── */
+        .log-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            overflow-y: auto;
+            flex: 1;
+        }
+        .log-day-header {
+            background: rgba(255,255,255,0.05);
+            padding: 8px 12px; border-radius: 4px;
+            font-size: 12px; font-weight: 700; color: var(--text-main);
+            text-align: center; margin-top: 10px;
+        }
+        .log-entry {
+            background: var(--bg-card);
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            line-height: 1.5;
+            border-left: 4px solid var(--accent-blue);
+            animation: slideIn 0.3s ease;
+        }
+        .log-entry.bad { border-left-color: var(--accent-red); }
+        .log-entry.good { border-left-color: var(--accent-green); }
+        .log-entry.neutral { border-left-color: var(--text-muted); }
+        .log-entry.alert { border-left-color: var(--accent-yellow); font-weight: 600; }
+        
+        .log-time { font-size: 11px; color: var(--text-muted); margin-bottom: 4px; font-weight: 600; }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        /* ── Overlays ── */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.7);
+            display: none; justify-content: center; align-items: center;
+            z-index: 100;
+        }
+        .modal-overlay.show { display: flex; }
+        .modal-content {
+            background: var(--bg-panel); width: 500px; max-width: 90%;
+            border-radius: 12px; padding: 25px; border: 1px solid var(--border-color);
+            max-height: 90vh; overflow-y: auto;
+        }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .modal-header h2 { margin: 0; font-size: 18px; color: var(--accent-blue); }
+        .close-btn { background: none; border: none; color: var(--text-muted); font-size: 24px; cursor: pointer; }
+        
+        .settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .setting-group { display: flex; flex-direction: column; gap: 5px; }
+        .setting-group label { font-size: 12px; color: var(--text-muted); }
+        .setting-group input { background: var(--bg-base); border: 1px solid var(--border-color); color: var(--text-main); padding: 8px; border-radius: 4px; font-size: 14px; }
+        .save-settings-btn { background: var(--accent-green); color: #000; font-weight: 600; border: none; padding: 10px; width: 100%; border-radius: 6px; margin-top: 20px; cursor: pointer; }
+
+        .overlay-screen {
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(15, 23, 42, 0.95);
+            display: none; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 200; text-align: center;
+        }
+        .overlay-screen.show { display: flex; }
+        .overlay-screen h1 { font-size: 48px; margin-bottom: 10px; }
+        .overlay-screen.win h1 { color: var(--accent-green); }
+        .overlay-screen.lose h1 { color: var(--accent-red); }
+        .overlay-screen p { font-size: 18px; color: var(--text-muted); max-width: 500px; margin-bottom: 30px; }
+        .restart-btn { background: var(--accent-blue); border: none; color: white; padding: 12px 24px; font-size: 16px; font-weight: bold; border-radius: 6px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <div class="navbar">
+        <h1>Lead Gen Simulator</h1>
+        <button class="nav-btn" onclick="openSettings()">⚙️ Settings</button>
+    </div>
+
+    <div class="main-container">
+        
+        <!-- Dashboard Panel -->
+        <div class="panel">
+            <h2 class="panel-title">Dashboard</h2>
+            
+            <div class="stat-block">
+                <div class="stat-label">Current Day</div>
+                <div class="stat-val day" id="ui-day">1</div>
+            </div>
+            
+            <div class="stat-block">
+                <div class="stat-label">Bank Balance</div>
+                <div class="stat-val money" id="ui-bank">$2,000</div>
+            </div>
+
+            <div class="stat-block" style="margin-bottom: 5px;">
+                <div class="stat-label">Motivation</div>
+                <div class="stat-val" id="ui-motivation-text" style="font-size: 20px;">100%</div>
+                <div class="motivation-bar-container">
+                    <div class="motivation-bar" id="ui-motivation-bar" style="width: 100%"></div>
+                </div>
+                <div style="font-size: 11px; color: var(--text-muted); margin-top: 6px;" id="ui-motivation-status">Ready to grind!</div>
+            </div>
+
+            <h2 class="panel-title" style="margin-top: 15px;">The Funnel</h2>
+            <ul class="funnel-list">
+                <li class="funnel-item"><span>Raw Data</span> <span id="ui-records">0</span></li>
+                <li class="funnel-item"><span>Skip Traced (Fresh)</span> <span id="ui-skiptraced">0</span></li>
+                <li class="funnel-item"><span>Recycled Contacts</span> <span id="ui-recycled">0</span></li>
+                <li class="funnel-item" style="border-top: 1px solid #475569; padding-top: 8px; margin-top: 4px;">
+                    <span>Warm Leads</span> <span id="ui-leads">0</span>
+                </li>
+                <li class="funnel-item"><span>Appointments</span> <span id="ui-appts">0</span></li>
+                <li class="funnel-item"><span>Deals Closed</span> <span id="ui-deals">0</span></li>
+            </ul>
+
+            <h2 class="panel-title" style="margin-top: 15px;">Lifetime Stats</h2>
+            <ul class="funnel-list">
+                <li class="funnel-item"><span>Data Bought</span> <span id="stat-data-bought">0</span></li>
+                <li class="funnel-item"><span>Records Traced</span> <span id="stat-skip-traced">0</span></li>
+                <li class="funnel-item"><span>Total Dials</span> <span id="stat-dials">0</span></li>
+                <li class="funnel-item"><span>Texts Sent</span> <span id="stat-texts">0</span></li>
+                <li class="funnel-item"><span>Mailers Sent</span> <span id="stat-mailers">0</span></li>
+            </ul>
+        </div>
+
+        <!-- Command Center Panel -->
+        <div class="panel">
+            <h2 class="panel-title">Daily Setup</h2>
+            
+            <div class="pacing-section">
+                <div class="pacing-header">
+                    <div style="font-weight: 600; font-size: 14px;">Work Pace (Max Hours)</div>
+                    <div class="hours-badge" id="ui-badge-max-hours">8 Hrs</div>
+                </div>
+                <div class="slider-container">
+                    <input type="range" id="pacing-slider" min="2" max="14" value="8" step="1">
+                </div>
+                <div class="pacing-desc" id="ui-pacing-desc">Full-time pace. Motivation slowly drains over weeks.</div>
+            </div>
+
+            <div class="schedule-header">
+                <div style="color: var(--text-muted); font-size: 13px;">Unallocated Time:</div>
+                <div class="hours-remaining"><span id="ui-hours-rem">8</span> / <span id="ui-hours-total">8</span> hrs</div>
+            </div>
+
+            <div class="actions-grid">
+                
+                <div class="action-card" id="card-data">
+                    <div>
+                        <div class="action-title">Pull Data</div>
+                        <div class="action-desc">Buy raw lists.</div>
+                        <div class="action-cost" id="cost-data"></div>
+                        <div class="action-time" id="time-data" style="position: absolute; top: 22px; right: 10px; font-size: 10px; font-weight: 600; color: var(--text-muted);"></div>
+                    </div>
+                    <div class="hour-allocator">
+                        <button class="alloc-btn" onclick="mod('data', -100)">-</button>
+                        <div class="alloc-val"><span id="alloc-data">0</span></div>
+                        <button class="alloc-btn" onclick="mod('data', 100)">+</button>
+                    </div>
+                </div>
+
+                <div class="action-card" id="card-skiptrace">
+                    <div>
+                        <div class="action-title">Skip Trace</div>
+                        <div class="action-desc">Find phone numbers.</div>
+                        <div class="action-cost" id="cost-skiptrace"></div>
+                        <div class="action-time" id="time-skiptrace" style="position: absolute; top: 22px; right: 10px; font-size: 10px; font-weight: 600; color: var(--text-muted);"></div>
+                    </div>
+                    <div class="hour-allocator">
+                        <button class="alloc-btn" onclick="mod('skiptrace', -100)">-</button>
+                        <div class="alloc-val"><span id="alloc-skiptrace">0</span></div>
+                        <button class="alloc-btn" onclick="mod('skiptrace', 100)">+</button>
+                    </div>
+                </div>
+
+                <div class="action-card" id="card-directmail">
+                    <div>
+                        <div class="action-title">Direct Mail</div>
+                        <div class="action-desc">Send mailers to raw data.</div>
+                        <div class="action-cost" id="cost-dm"></div>
+                        <div class="action-time" id="time-dm" style="position: absolute; top: 22px; right: 10px; font-size: 10px; font-weight: 600; color: var(--text-muted);"></div>
+                    </div>
+                    <div class="hour-allocator">
+                        <button class="alloc-btn" onclick="mod('directmail', -100)">-</button>
+                        <div class="alloc-val"><span id="alloc-directmail">0</span></div>
+                        <button class="alloc-btn" onclick="mod('directmail', 100)">+</button>
+                    </div>
+                </div>
+
+                <div class="action-card" id="card-coldcall">
+                    <div>
+                        <div class="action-title">Cold Call (Fresh)</div>
+                        <div class="action-desc">Dial uncontacted records.</div>
+                        <div class="action-cost">Free</div>
+                    </div>
+                    <div class="hour-allocator">
+                        <button class="alloc-btn" onclick="mod('coldcall', -1)">-</button>
+                        <div class="alloc-val"><span id="alloc-coldcall">0</span>h</div>
+                        <button class="alloc-btn" onclick="mod('coldcall', 1)">+</button>
+                    </div>
+                </div>
+
+                <div class="action-card" id="card-sms">
+                    <div>
+                        <div class="action-title">Send SMS (Fresh)</div>
+                        <div class="action-desc">Text uncontacted records.</div>
+                        <div class="action-cost" id="cost-sms"></div>
+                        <div class="action-time" id="time-sms" style="position: absolute; top: 22px; right: 10px; font-size: 10px; font-weight: 600; color: var(--text-muted);"></div>
+                    </div>
+                    <div class="hour-allocator">
+                        <button class="alloc-btn" onclick="mod('sms', -100)">-</button>
+                        <div class="alloc-val"><span id="alloc-sms">0</span></div>
+                        <button class="alloc-btn" onclick="mod('sms', 100)">+</button>
+                    </div>
+                </div>
+
+                <div class="action-card" id="card-followup">
+                    <div>
+                        <div class="action-title">Follow Up</div>
+                        <div class="action-desc">Call Warm Leads for appts.</div>
+                        <div class="action-cost">Free</div>
+                    </div>
+                    <div class="hour-allocator">
+                        <button class="alloc-btn" onclick="mod('followup', -1)">-</button>
+                        <div class="alloc-val"><span id="alloc-followup">0</span>h</div>
+                        <button class="alloc-btn" onclick="mod('followup', 1)">+</button>
+                    </div>
+                </div>
+
+                <div class="action-card" id="card-coldcallrec">
+                    <div>
+                        <div class="action-title">Cold Call (Old)</div>
+                        <div class="action-desc">Dial recycled contacts. (Lower Conv)</div>
+                        <div class="action-cost">Free</div>
+                    </div>
+                    <div class="hour-allocator">
+                        <button class="alloc-btn" onclick="mod('coldcallrec', -1)">-</button>
+                        <div class="alloc-val"><span id="alloc-coldcallrec">0</span>h</div>
+                        <button class="alloc-btn" onclick="mod('coldcallrec', 1)">+</button>
+                    </div>
+                </div>
+
+                <div class="action-card" id="card-smsrec">
+                    <div>
+                        <div class="action-title">Send SMS (Old)</div>
+                        <div class="action-desc">Text recycled contacts. (Lower Conv)</div>
+                        <div class="action-cost" id="cost-smsrec"></div>
+                        <div class="action-time" id="time-smsrec" style="position: absolute; top: 22px; right: 10px; font-size: 10px; font-weight: 600; color: var(--text-muted);"></div>
+                    </div>
+                    <div class="hour-allocator">
+                        <button class="alloc-btn" onclick="mod('smsrec', -100)">-</button>
+                        <div class="alloc-val"><span id="alloc-smsrec">0</span></div>
+                        <button class="alloc-btn" onclick="mod('smsrec', 100)">+</button>
+                    </div>
+                </div>
+
+                <div class="action-card" id="card-appointment">
+                    <div>
+                        <div class="action-title">Appointments</div>
+                        <div class="action-desc">Present offers. (2h ea)</div>
+                        <div class="action-cost">Free</div>
+                    </div>
+                    <div class="hour-allocator">
+                        <button class="alloc-btn" onclick="mod('appointment', -1)">-</button>
+                        <div class="alloc-val"><span id="alloc-appointment">0</span>h</div>
+                        <button class="alloc-btn" onclick="mod('appointment', 1)">+</button>
+                    </div>
+                </div>
+
+            </div>
+
+            <button class="end-day-btn" id="end-day-btn" onclick="endDay()">Execute Daily Plan</button>
+        </div>
+
+        <!-- Event Log Panel -->
+        <div class="panel">
+            <h2 class="panel-title">Activity Log</h2>
+            <div class="log-container" id="log-container">
+                <div class="log-entry neutral">
+                    Welcome to the Lead Gen Simulator. Manage your daily schedule to find a deal!
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Game Over Overlays -->
+    <div class="overlay-screen win" id="screen-win">
+        <h1>DEAL CLOSED!</h1>
+        <p>Congratulations! You successfully managed your funnel, booked appointments, and got a contract signed.</p>
+        <button class="restart-btn" onclick="location.reload()">Play Again</button>
+    </div>
+    
+    <div class="overlay-screen lose" id="screen-lose">
+        <h1>OUT OF BUSINESS</h1>
+        <p>You ran out of money and motivation. Your pipeline dried up.</p>
+        <button class="restart-btn" onclick="location.reload()">Try Again</button>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal-overlay" id="settings-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Simulator Settings</h2>
+                <button class="close-btn" onclick="closeSettings()">×</button>
+            </div>
+            
+            <div class="settings-grid">
+                <div class="setting-group">
+                    <label>Starting Bank ($)</label>
+                    <input type="number" id="set_bank" value="2000">
+                </div>
+                <div class="setting-group">
+                    <label>Cost per Data Record ($)</label>
+                    <input type="number" step="0.01" id="set_cost_data" value="0.05">
+                </div>
+                <div class="setting-group">
+                    <label>Cost per Skip Trace ($)</label>
+                    <input type="number" step="0.01" id="set_cost_skiptrace" value="0.12">
+                </div>
+                <div class="setting-group">
+                    <label>Skip Trace Hit Rate (%)</label>
+                    <input type="number" id="set_rate_skiptrace" value="75">
+                </div>
+                
+                <!-- Channels -->
+                <div class="setting-group" style="grid-column: 1 / -1; margin-top: 10px; border-bottom: 1px solid #475569; padding-bottom: 5px;">
+                    <label style="font-weight:bold; color:#fff;">Cold Calling (Per Hour)</label>
+                </div>
+                <div class="setting-group">
+                    <label>Dials per Hour</label>
+                    <input type="number" id="set_cc_dials" value="25">
+                </div>
+                <div class="setting-group">
+                    <label>Lead Conv. Rate of Dials (%)</label>
+                    <input type="number" step="0.1" id="set_cc_leadrate" value="0.5">
+                </div>
+
+                <div class="setting-group" style="grid-column: 1 / -1; margin-top: 10px; border-bottom: 1px solid #475569; padding-bottom: 5px;">
+                    <label style="font-weight:bold; color:#fff;">SMS Marketing</label>
+                </div>
+                <div class="setting-group">
+                    <label>Cost per SMS ($)</label>
+                    <input type="number" step="0.01" id="set_sms_cost" value="0.04">
+                </div>
+                <div class="setting-group">
+                    <label>SMS Lead Rate (%)</label>
+                    <input type="number" step="0.1" id="set_sms_leadrate" value="0.2">
+                </div>
+
+                <div class="setting-group" style="grid-column: 1 / -1; margin-top: 10px; border-bottom: 1px solid #475569; padding-bottom: 5px;">
+                    <label style="font-weight:bold; color:#fff;">Direct Mail</label>
+                </div>
+                <div class="setting-group">
+                    <label>Cost per Mailer ($)</label>
+                    <input type="number" step="0.01" id="set_dm_cost" value="0.60">
+                </div>
+                <div class="setting-group">
+                    <label>DM Lead Rate (%)</label>
+                    <input type="number" step="0.1" id="set_dm_leadrate" value="0.5">
+                </div>
+
+                <div class="setting-group" style="grid-column: 1 / -1; margin-top: 10px; border-bottom: 1px solid #475569; padding-bottom: 5px;">
+                    <label style="font-weight:bold; color:#fff;">Funnel Conversion</label>
+                </div>
+                <div class="setting-group">
+                    <label>Lead to Appt (%)</label>
+                    <input type="number" id="set_conv_appt" value="20">
+                </div>
+                <div class="setting-group">
+                    <label>Appt to Deal (%)</label>
+                    <input type="number" id="set_conv_deal" value="15">
+                </div>
+            </div>
+
+            <button class="save-settings-btn" onclick="saveSettings()">Save Settings</button>
+        </div>
+    </div>
+
+    <script>
+        // Game State
+        let state = {
+            day: 1,
+            bank: 2000,
+            motivation: 100,
+            
+            // Funnel
+            records: 0,
+            skiptraced: 0, // Fresh contacts
+            recycled: 0,   // Old contacts
+            leads: 0,
+            appts: 0,
+            deals: 0,
+
+            // Schedule
+            maxHours: 8,
+            alloc: {
+                data: 0,
+                skiptrace: 0,
+                directmail: 0,
+                coldcall: 0,
+                sms: 0,
+                coldcallrec: 0,
+                smsrec: 0,
+                followup: 0,
+                appointment: 0
+            },
+            
+            // Lifetime Stats
+            stats: {
+                dataBought: 0,
+                skipTraced: 0,
+                dials: 0,
+                texts: 0,
+                mailers: 0
+            }
+        };
+
+        // Configuration / Settings
+        let cfg = {
+            costData: 0.05,
+            costSkip: 0.12,
+            rateSkip: 0.75,
+            ccDialsPerHour: 25,
+            ccLeadRate: 0.005,
+            costSms: 0.04,
+            smsLeadRate: 0.002,
+            costDm: 0.60,
+            dmLeadRate: 0.005,
+            convLeadToAppt: 0.20,
+            convApptToDeal: 0.15,
+            volDataPerHour: 5000,
+            volSkipPerHour: 5000,
+            volDmPerHour: 500,
+            volSmsPerHour: 1000
+        };
+
+        // UI Elements
+        const ui = {
+            day: document.getElementById('ui-day'),
+            bank: document.getElementById('ui-bank'),
+            motivationText: document.getElementById('ui-motivation-text'),
+            motivationBar: document.getElementById('ui-motivation-bar'),
+            motivationStatus: document.getElementById('ui-motivation-status'),
+            records: document.getElementById('ui-records'),
+            skiptraced: document.getElementById('ui-skiptraced'),
+            recycled: document.getElementById('ui-recycled'),
+            leads: document.getElementById('ui-leads'),
+            appts: document.getElementById('ui-appts'),
+            deals: document.getElementById('ui-deals'),
+            
+            slider: document.getElementById('pacing-slider'),
+            badgeMaxHours: document.getElementById('ui-badge-max-hours'),
+            pacingDesc: document.getElementById('ui-pacing-desc'),
+            hoursRem: document.getElementById('ui-hours-rem'),
+            hoursTotal: document.getElementById('ui-hours-total'),
+            
+            logContainer: document.getElementById('log-container'),
+            
+            statDataBought: document.getElementById('stat-data-bought'),
+            statSkipTraced: document.getElementById('stat-skip-traced'),
+            statDials: document.getElementById('stat-dials'),
+            statTexts: document.getElementById('stat-texts'),
+            statMailers: document.getElementById('stat-mailers')
+        };
+
+        function getActionTime(action) {
+            let alloc = state.alloc[action];
+            if (alloc === 0) return 0;
+            if (['coldcall', 'coldcallrec', 'followup', 'appointment'].includes(action)) return alloc;
+            
+            let rate = 1000;
+            if (action === 'data') rate = cfg.volDataPerHour;
+            if (action === 'skiptrace') rate = cfg.volSkipPerHour;
+            if (action === 'directmail') rate = cfg.volDmPerHour;
+            if (action === 'sms' || action === 'smsrec') rate = cfg.volSmsPerHour;
+            
+            return 1 + Math.floor((alloc - 1) / rate);
+        }
+
+        function getAllocatedHours() {
+            return Object.keys(state.alloc).reduce((a, key) => a + getActionTime(key), 0);
+        }
+
+        // Initialize UI
+        function updateUI() {
+            ui.day.innerText = state.day;
+            ui.bank.innerText = "$" + state.bank.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            ui.motivationText.innerText = Math.round(state.motivation) + "%";
+            ui.motivationBar.style.width = Math.min(100, Math.max(0, state.motivation)) + "%";
+            
+            // Motivation color logic
+            if(state.motivation > 75) {
+                ui.motivationBar.style.background = 'var(--accent-green)';
+                ui.motivationStatus.innerText = "Feeling energized!";
+                ui.motivationStatus.style.color = 'var(--accent-green)';
+            } else if(state.motivation > 35) {
+                ui.motivationBar.style.background = 'var(--accent-yellow)';
+                ui.motivationStatus.innerText = "Getting a bit tired...";
+                ui.motivationStatus.style.color = 'var(--accent-yellow)';
+            } else {
+                ui.motivationBar.style.background = 'var(--accent-red)';
+                ui.motivationStatus.innerText = "Danger of burnout!";
+                ui.motivationStatus.style.color = 'var(--accent-red)';
+            }
+
+            ui.records.innerText = Math.floor(state.records).toLocaleString();
+            ui.skiptraced.innerText = Math.floor(state.skiptraced).toLocaleString();
+            ui.recycled.innerText = Math.floor(state.recycled).toLocaleString();
+            ui.leads.innerText = Math.floor(state.leads).toLocaleString();
+            ui.appts.innerText = Math.floor(state.appts).toLocaleString();
+            ui.deals.innerText = Math.floor(state.deals).toLocaleString();
+            
+            ui.statDataBought.innerText = Math.floor(state.stats.dataBought).toLocaleString();
+            ui.statSkipTraced.innerText = Math.floor(state.stats.skipTraced).toLocaleString();
+            ui.statDials.innerText = Math.floor(state.stats.dials).toLocaleString();
+            ui.statTexts.innerText = Math.floor(state.stats.texts).toLocaleString();
+            ui.statMailers.innerText = Math.floor(state.stats.mailers).toLocaleString();
+
+            // Pacing & Allocations
+            let allocSum = getAllocatedHours();
+            let rem = state.maxHours - allocSum;
+            
+            ui.hoursRem.innerText = rem;
+            ui.hoursTotal.innerText = state.maxHours;
+            
+            // Update individual cards
+            for(let key in state.alloc) {
+                document.getElementById('alloc-' + key).innerText = state.alloc[key];
+                let card = document.getElementById('card-' + key);
+                if(state.alloc[key] > 0) card.classList.add('active');
+                else card.classList.remove('active');
+            }
+
+            // Costs text
+            document.getElementById('cost-data').innerText = "~$" + (state.alloc.data * cfg.costData).toFixed(0);
+            document.getElementById('cost-skiptrace').innerText = "~$" + (state.alloc.skiptrace * cfg.costSkip).toFixed(0);
+            document.getElementById('cost-sms').innerText = "~$" + (state.alloc.sms * cfg.costSms).toFixed(0);
+            document.getElementById('cost-smsrec').innerText = "~$" + (state.alloc.smsrec * cfg.costSms).toFixed(0);
+            document.getElementById('cost-dm').innerText = "~$" + (state.alloc.directmail * cfg.costDm).toFixed(0);
+
+            // Time cost text
+            document.getElementById('time-data').innerText = state.alloc.data > 0 ? getActionTime('data') + "h" : "";
+            document.getElementById('time-skiptrace').innerText = state.alloc.skiptrace > 0 ? getActionTime('skiptrace') + "h" : "";
+            document.getElementById('time-sms').innerText = state.alloc.sms > 0 ? getActionTime('sms') + "h" : "";
+            document.getElementById('time-smsrec').innerText = state.alloc.smsrec > 0 ? getActionTime('smsrec') + "h" : "";
+            document.getElementById('time-dm').innerText = state.alloc.directmail > 0 ? getActionTime('directmail') + "h" : "";
+        }
+
+        // Pacing Slider Logic
+        ui.slider.addEventListener('input', function(e) {
+            let newMax = parseInt(e.target.value);
+            state.maxHours = newMax;
+            
+            ui.badgeMaxHours.innerText = state.maxHours + " Hrs";
+            
+            // Styling badge based on hours
+            ui.badgeMaxHours.className = 'hours-badge';
+            if(state.maxHours > 8 && state.maxHours <= 11) ui.badgeMaxHours.classList.add('warning');
+            else if(state.maxHours > 11) ui.badgeMaxHours.classList.add('danger');
+
+            if(state.maxHours <= 4) ui.pacingDesc.innerText = "Relaxed pace. Motivation recovers.";
+            else if(state.maxHours <= 8) ui.pacingDesc.innerText = "Full-time grind. Motivation slowly drains.";
+            else ui.pacingDesc.innerText = "Extreme hustle! High risk of burnout.";
+
+            // If new max is lower than current allocations, reset allocations
+            if(getAllocatedHours() > state.maxHours) {
+                for(let key in state.alloc) state.alloc[key] = 0;
+            }
+            
+            updateUI();
+        });
+
+        function mod(action, amt) {
+            let current = state.alloc[action];
+            let newAmt = current + amt;
+            
+            if(newAmt < 0) return; // Can't go below 0
+            
+            let oldTime = getActionTime(action);
+            state.alloc[action] = newAmt;
+            let newTime = getActionTime(action);
+            
+            if(newTime > oldTime && getAllocatedHours() > state.maxHours) { 
+                // Exceeded max hours, revert
+                state.alloc[action] = current;
+                return; 
+            }
+            
+            updateUI();
+        }
+
+        function addLog(msg, type="neutral") {
+            const div = document.createElement('div');
+            div.className = `log-entry ${type}`;
+            div.innerHTML = msg;
+            ui.logContainer.prepend(div);
+        }
+        
+        function addDayHeader() {
+            const div = document.createElement('div');
+            div.className = `log-day-header`;
+            div.innerText = `--- DAY ${state.day} ---`;
+            ui.logContainer.prepend(div);
+        }
+
+        function getVariance(rate, volume) {
+            let successes = 0;
+            for(let i=0; i<volume; i++) {
+                if(Math.random() < rate) successes++;
+            }
+            return successes;
+        }
+
+        // Action Execution
+        function endDay() {
+            if(state.motivation <= 0 && state.maxHours > 0) {
+                addLog("You are completely burnt out! You need to rest and reset.", "alert");
+                return;
+            }
+
+            addDayHeader();
+
+            let allocSum = getAllocatedHours();
+
+            // Motivation drain based on max hours (intent)
+            if(allocSum === 0) {
+                state.motivation += 25;
+                addLog("Took the day off. Motivation recovered +25%.", "good");
+            } else {
+                if(state.maxHours <= 4) state.motivation += 2; // relaxing
+                else if(state.maxHours <= 8) state.motivation -= (state.maxHours - 4) * 2;
+                else state.motivation -= (state.maxHours - 4) * 4; // burnout zone
+            }
+            
+            let dailyMoneySpent = 0;
+
+            // Execute Schedule
+            if(state.alloc.data > 0) {
+                let vol = state.alloc.data;
+                let t = getActionTime('data');
+                let cost = vol * cfg.costData;
+                if(cost > state.bank - dailyMoneySpent) {
+                    vol = Math.floor((state.bank - dailyMoneySpent) / cfg.costData);
+                    cost = vol * cfg.costData;
+                }
+                dailyMoneySpent += cost;
+                state.records += vol;
+                state.stats.dataBought += vol;
+                addLog(`<div class="log-time">[${t}h] Data</div> Bought ${vol} raw records for $${cost.toFixed(2)}.`);
+            }
+
+            if(state.alloc.skiptrace > 0) {
+                let vol = state.alloc.skiptrace;
+                let t = getActionTime('skiptrace');
+                let toTrace = Math.min(state.records, vol);
+                if(toTrace === 0) { addLog(`<div class="log-time">[${t}h] Skip Trace</div> No raw data to skip trace!`, "bad"); }
+                else {
+                    let cost = toTrace * cfg.costSkip;
+                    if(cost > state.bank - dailyMoneySpent) {
+                        toTrace = Math.floor((state.bank - dailyMoneySpent) / cfg.costSkip);
+                        cost = toTrace * cfg.costSkip;
+                    }
+                    dailyMoneySpent += cost;
+                    state.records -= toTrace;
+                    state.stats.skipTraced += toTrace;
+                    let hits = getVariance(cfg.rateSkip, toTrace);
+                    state.skiptraced += hits;
+                    addLog(`<div class="log-time">[${t}h] Skip Trace</div> Traced ${toTrace} records for $${cost.toFixed(2)}. Got ${hits} numbers!`);
+                }
+            }
+
+            if(state.alloc.directmail > 0) {
+                let vol = state.alloc.directmail;
+                let t = getActionTime('directmail');
+                let toMail = Math.min(state.records, vol);
+                if(toMail === 0) { addLog(`<div class="log-time">[${t}h] Direct Mail</div> No raw data to mail!`, "bad"); }
+                else {
+                    let cost = toMail * cfg.costDm;
+                    if(cost > state.bank - dailyMoneySpent) {
+                        toMail = Math.floor((state.bank - dailyMoneySpent) / cfg.costDm);
+                        cost = toMail * cfg.costDm;
+                    }
+                    dailyMoneySpent += cost;
+                    state.records -= toMail; // Mail burns raw data unless they follow up, we'll keep it simple
+                    state.stats.mailers += toMail;
+                    let newLeads = getVariance(cfg.dmLeadRate, toMail);
+                    state.leads += newLeads;
+                    let m = `<div class="log-time">[${t}h] Direct Mail</div> Sent ${toMail} mailers ($${cost.toFixed(2)}). Got ${newLeads} leads.`;
+                    if(newLeads > 0) { addLog(m, "good"); state.motivation += 2 * newLeads; } else { addLog(m); }
+                }
+            }
+
+            if(state.alloc.coldcall > 0) {
+                let h = state.alloc.coldcall;
+                let toDial = Math.min(state.skiptraced, h * cfg.ccDialsPerHour);
+                if(toDial === 0) { addLog(`<div class="log-time">[${h}h] Cold Call</div> No fresh numbers to call!`, "bad"); }
+                else {
+                    state.skiptraced -= toDial;
+                    state.stats.dials += toDial;
+                    let newLeads = getVariance(cfg.ccLeadRate, toDial);
+                    state.leads += newLeads;
+                    state.recycled += (toDial - newLeads); // The rest become recycled
+                    let m = `<div class="log-time">[${h}h] CC (Fresh)</div> Dialed ${toDial} fresh numbers. Generated ${newLeads} leads.`;
+                    if(newLeads > 0) { addLog(m, "good"); state.motivation += 2 * newLeads; } else { addLog(m); }
+                }
+            }
+
+            if(state.alloc.coldcallrec > 0) {
+                let h = state.alloc.coldcallrec;
+                let toDial = Math.min(state.recycled, h * cfg.ccDialsPerHour);
+                if(toDial === 0) { addLog(`<div class="log-time">[${h}h] CC (Old)</div> No recycled numbers to call!`, "bad"); }
+                else {
+                    state.recycled -= toDial;
+                    state.stats.dials += toDial;
+                    // Lower conversion rate for recycled data (divide by 3)
+                    let newLeads = getVariance(cfg.ccLeadRate / 3, toDial);
+                    state.leads += newLeads;
+                    state.recycled += (toDial - newLeads); // Put them right back in the recycled pool
+                    let m = `<div class="log-time">[${h}h] CC (Old)</div> Dialed ${toDial} recycled numbers. Generated ${newLeads} leads.`;
+                    if(newLeads > 0) { addLog(m, "good"); state.motivation += 2 * newLeads; } else { addLog(m); }
+                }
+            }
+
+            if(state.alloc.sms > 0) {
+                let vol = state.alloc.sms;
+                let t = getActionTime('sms');
+                let toText = Math.min(state.skiptraced, vol);
+                if(toText === 0) { addLog(`<div class="log-time">[${t}h] SMS</div> No fresh numbers to text!`, "bad"); }
+                else {
+                    let cost = toText * cfg.costSms;
+                    if(cost > state.bank - dailyMoneySpent) {
+                        toText = Math.floor((state.bank - dailyMoneySpent) / cfg.costSms);
+                        cost = toText * cfg.costSms;
+                    }
+                    dailyMoneySpent += cost;
+                    state.skiptraced -= toText;
+                    state.stats.texts += toText;
+                    let newLeads = getVariance(cfg.smsLeadRate, toText);
+                    state.leads += newLeads;
+                    state.recycled += (toText - newLeads); // The rest become recycled
+                    let m = `<div class="log-time">[${t}h] SMS (Fresh)</div> Sent ${toText} texts ($${cost.toFixed(2)}). Generated ${newLeads} leads.`;
+                    if(newLeads > 0) { addLog(m, "good"); state.motivation += 2 * newLeads; } else { addLog(m); }
+                }
+            }
+
+            if(state.alloc.smsrec > 0) {
+                let vol = state.alloc.smsrec;
+                let t = getActionTime('smsrec');
+                let toText = Math.min(state.recycled, vol);
+                if(toText === 0) { addLog(`<div class="log-time">[${t}h] SMS (Old)</div> No recycled numbers to text!`, "bad"); }
+                else {
+                    let cost = toText * cfg.costSms;
+                    if(cost > state.bank - dailyMoneySpent) {
+                        toText = Math.floor((state.bank - dailyMoneySpent) / cfg.costSms);
+                        cost = toText * cfg.costSms;
+                    }
+                    dailyMoneySpent += cost;
+                    state.recycled -= toText;
+                    state.stats.texts += toText;
+                    // Lower conversion rate for recycled data (divide by 3)
+                    let newLeads = getVariance(cfg.smsLeadRate / 3, toText);
+                    state.leads += newLeads;
+                    state.recycled += (toText - newLeads); // Back into recycled pool
+                    let m = `<div class="log-time">[${t}h] SMS (Old)</div> Sent ${toText} texts to recycled list ($${cost.toFixed(2)}). Generated ${newLeads} leads.`;
+                    if(newLeads > 0) { addLog(m, "good"); state.motivation += 2 * newLeads; } else { addLog(m); }
+                }
+            }
+
+            if(state.alloc.followup > 0) {
+                let h = state.alloc.followup;
+                if(state.leads === 0) { addLog(`<div class="log-time">[${h}h] Follow Up</div> No leads to call!`, "bad"); }
+                else {
+                    let toFollowUp = Math.min(state.leads, h * 2);
+                    state.leads -= toFollowUp;
+                    let newAppts = getVariance(cfg.convLeadToAppt, toFollowUp);
+                    state.appts += newAppts;
+                    state.leads += Math.floor((toFollowUp - newAppts) * 0.5); // some survive
+                    let m = `<div class="log-time">[${h}h] Follow Up</div> Called ${toFollowUp} leads. Booked ${newAppts} appts!`;
+                    if(newAppts > 0) { addLog(m, "good"); state.motivation += 10 * newAppts; } else { addLog(m); }
+                }
+            }
+
+            if(state.alloc.appointment > 0) {
+                let h = state.alloc.appointment;
+                if(state.appts === 0) { addLog(`<div class="log-time">[${h}h] Appointments</div> No appointments booked!`, "bad"); }
+                else {
+                    let toGo = Math.min(state.appts, Math.floor(h / 2));
+                    if(toGo === 0) { addLog(`<div class="log-time">[${h}h] Appointments</div> Need at least 2 hours for 1 appointment.`, "alert"); }
+                    else {
+                        state.appts -= toGo;
+                        let newDeals = getVariance(cfg.convApptToDeal, toGo);
+                        state.deals += newDeals;
+                        let m = `<div class="log-time">[${h}h] Appointments</div> Went on ${toGo} appointments. Closed ${newDeals} deals!`;
+                        if(newDeals > 0) { addLog(m, "good"); state.motivation = 100; } 
+                        else { addLog(m + " No luck.", "bad"); state.motivation -= 5; }
+                    }
+                }
+            }
+
+            if(allocSum === 0 && state.maxHours > 0) {
+                addLog("You set hours but planned no actions. Wasted day.", "alert");
+            }
+
+            // Deduct total spent today
+            state.bank -= dailyMoneySpent;
+
+            // Passive event
+            if(state.leads > 0 && Math.random() < 0.1) { 
+                state.leads--; 
+                addLog("A warm lead ghosted you.", "neutral"); 
+            }
+
+            state.motivation = Math.max(0, Math.min(100, state.motivation));
+
+            if(state.deals > 0) {
+                document.getElementById('screen-win').classList.add('show');
+            } else if (state.bank <= 0 && state.motivation <= 0) {
+                document.getElementById('screen-lose').classList.add('show');
+            }
+
+            state.day++;
+            updateUI();
+        }
+
+        // Settings Modal Logic
+        function openSettings() { document.getElementById('settings-modal').classList.add('show'); }
+        function closeSettings() { document.getElementById('settings-modal').classList.remove('show'); }
+        function saveSettings() {
+            if(state.day === 1 && state.bank == document.getElementById('set_bank').defaultValue) {
+                 state.bank = parseFloat(document.getElementById('set_bank').value);
+            }
+            cfg.costData = parseFloat(document.getElementById('set_cost_data').value);
+            cfg.costSkip = parseFloat(document.getElementById('set_cost_skiptrace').value);
+            cfg.rateSkip = parseFloat(document.getElementById('set_rate_skiptrace').value) / 100;
+            cfg.ccDialsPerHour = parseInt(document.getElementById('set_cc_dials').value);
+            cfg.ccLeadRate = parseFloat(document.getElementById('set_cc_leadrate').value) / 100;
+            cfg.costSms = parseFloat(document.getElementById('set_sms_cost').value);
+            cfg.smsLeadRate = parseFloat(document.getElementById('set_sms_leadrate').value) / 100;
+            cfg.costDm = parseFloat(document.getElementById('set_dm_cost').value);
+            cfg.dmLeadRate = parseFloat(document.getElementById('set_dm_leadrate').value) / 100;
+            cfg.convLeadToAppt = parseFloat(document.getElementById('set_conv_appt').value) / 100;
+            cfg.convApptToDeal = parseFloat(document.getElementById('set_conv_deal').value) / 100;
+
+            closeSettings();
+            updateUI();
+        }
+
+        // Init
+        updateUI();
+
+    </script>
+</body>
+</html>

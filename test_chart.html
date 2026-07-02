@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <canvas id="myChart" width="400" height="200"></canvas>
+    <button onclick="addPoint()">Add Point</button>
+    <script>
+        let dataArr = [10, 15, 20];
+        let labels = [1, 2, 3];
+        let chart = new Chart(document.getElementById('myChart'), {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Test',
+                    data: dataArr,
+                    borderColor: 'blue',
+                    fill: true
+                }]
+            },
+            options: {
+                animations: {
+                    y: {
+                        from: (ctx) => {
+                            if (ctx.type === 'data' && ctx.dataIndex > 0 && !ctx.active) {
+                                let meta = ctx.chart.getDatasetMeta(ctx.datasetIndex);
+                                let prev = meta.data[ctx.dataIndex - 1];
+                                if (prev) return prev.y;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        function addPoint() {
+            labels.push(labels.length + 1);
+            dataArr.push(dataArr[dataArr.length - 1] + 5);
+            chart.update();
+        }
+    </script>
+</body>
+</html>
