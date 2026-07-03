@@ -488,25 +488,24 @@
         .btn-run-all { background: linear-gradient(135deg, #f59e0b, #d97706); }
         .btn-run-all:hover { background: linear-gradient(135deg, #d97706, #b45309); }
         
-        .balloon-screen { display: none; margin-top: 12px; background: #10b981; padding: 15px; border-radius: 8px; color: #0f172a; max-width: 800px; margin-left: auto; margin-right: auto;}
-        .balloon-screen h1 { color: #0f172a; margin: 0; font-size: 20px;}
-        .balloon-screen h3 { font-size: 14px; margin: 6px 0;}
-
-        /* ── Verdict Panel ── */
+        /* ── Verdict Panel Dialog ── */
         .verdict-panel {
-            display: none;
-            margin-top: 14px;
+            margin: auto;
             background: linear-gradient(135deg, #1e293b, #0f172a);
             border: 1px solid #334155;
             border-radius: 12px;
-            padding: 20px 24px;
+            padding: 30px;
             max-width: 800px;
-            margin-left: auto;
-            margin-right: auto;
+            width: 90%;
             text-align: left;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.8);
+            color: var(--text-primary);
         }
-        .verdict-panel.show { display: block; }
+        .verdict-panel::backdrop {
+            background-color: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+        }
         .verdict-title {
             font-size: 18px;
             font-weight: 700;
@@ -1106,17 +1105,14 @@
             <button class="btn-run-all" onclick="runFullSimulation()">Run Full Simulation 🚀</button>
         </div>
 
-        <div id="balloonScreen" class="balloon-screen">
-            <h1>💥 <span id="studyCompleteYear">10</span>-YEAR STUDY COMPLETE 💥</h1>
-            <h3>Look at the stark divergence in wealth between Arthur (deferred tax note vs upfront tax HYSA) and the Student (low interest vs high bank rate).</h3>
-            <button onclick="switchTab('scorecard')" style="background: #fbbf24; color: #0f172a; padding: 6px 12px; border-radius: 4px; font-weight: bold; margin-top: 5px;">📊 View Scorecard</button>
-            <button onclick="switchTab('charts')" style="background: #38bdf8; color: #0f172a; padding: 6px 12px; border-radius: 4px; font-weight: bold; margin-top: 5px;">📈 View Charts</button>
-            <button style="background: #0f172a; color: white; padding: 6px 12px; border-radius: 4px; font-weight: bold; margin-top: 5px;" onclick="resetWithInputs()">Play Again</button>
-        </div>
+        <!-- VERDICT PANEL DIALOG -->
+        <dialog id="verdictPanel" class="verdict-panel" closedby="any" aria-labelledby="verdictTitle">
+            <div style="text-align: center; margin-bottom: 20px;">
+                <h1 style="color: #10b981; margin: 0; font-size: 24px;">💥 <span id="studyCompleteYear">10</span>-YEAR STUDY COMPLETE 💥</h1>
+                <h3 style="color: #94a3b8; font-size: 14px; margin: 6px 0; font-weight: 500;">Look at the stark divergence in wealth between Arthur (deferred tax note vs upfront tax HYSA) and the Student (low interest vs high bank rate).</h3>
+            </div>
 
-        <!-- VERDICT PANEL -->
-        <div id="verdictPanel" class="verdict-panel">
-            <div class="verdict-title">📋 <span id="verdictYear">10</span>-Year Verdict: Who Wins?</div>
+            <div class="verdict-title" id="verdictTitle">📋 <span id="verdictYear">10</span>-Year Verdict: Who Wins?</div>
             <div class="verdict-grid">
                 <div class="verdict-card student-card">
                     <div class="vc-label">Student (Buyer) Advantage with Seller Financing</div>
@@ -1139,7 +1135,14 @@
                     <div class="vc-note" id="verdict_combined_note">—</div>
                 </div>
             </div>
-        </div>
+            
+            <form method="dialog" style="text-align: center; margin-top: 24px; padding-top: 15px; border-top: 1px solid #334155; display: flex; justify-content: center; flex-wrap: wrap; gap: 10px;">
+                <button type="submit" style="background: #475569; margin: 0;">Close Panel</button>
+                <button type="button" onclick="document.getElementById('verdictPanel').close(); switchTab('scorecard')" style="background: #fbbf24; color: #0f172a; margin: 0;">📊 View Scorecard</button>
+                <button type="button" onclick="document.getElementById('verdictPanel').close(); switchTab('charts')" style="background: #38bdf8; color: #0f172a; margin: 0;">📈 View Charts</button>
+                <button type="button" style="background: #0f172a; border: 1px solid #334155; color: white; margin: 0;" onclick="document.getElementById('verdictPanel').close(); resetWithInputs()">Play Again</button>
+            </form>
+        </dialog>
     </div>
 
     <script>
@@ -1344,8 +1347,8 @@
             document.getElementById('sf_bankCard').style.opacity = "0.6";
             document.getElementById('sf_bDebtLabel').innerText = `Debt (${(CONFIG.sfRate*100).toFixed(1)}%)`;
             document.getElementById('controls').style.display = 'block';
-            document.getElementById('balloonScreen').style.display = 'none';
-            document.getElementById('verdictPanel').classList.remove('show');
+            const vp = document.getElementById('verdictPanel');
+            if (vp.open) vp.close();
             document.getElementById('bk_bankFeesDisplay').innerText = formatCurrency(CONFIG.closingCosts);
         }
 
@@ -1714,7 +1717,6 @@
 
             if(month >= (CONFIG.simulationYears * 12)) {
                 document.getElementById('controls').style.display = 'none';
-                document.getElementById('balloonScreen').style.display = 'block';
                 renderVerdict();
             }
         }
@@ -1786,7 +1788,7 @@
                     ? `Together, the people keep ${formatCurrency(combinedDelta)} more when they cut out the bank.`
                     : `Together, the people are ${formatCurrency(Math.abs(combinedDelta))} worse off. Unusual result — check your inputs.`;
 
-            document.getElementById('verdictPanel').classList.add('show');
+            document.getElementById('verdictPanel').showModal();
         }
 
         // ═══════════════════════════════════════════════
@@ -2012,6 +2014,23 @@
             initCharts();
             updateUI("CLOSING DAY! Arthur sells the " + formatCurrency(CONFIG.salePrice) + " property (Tax Basis: " + formatCurrency(CONFIG.taxBasis) + "). Let's compare paths over " + CONFIG.simulationYears + " years.");
         };
+    </script>
+    <script>
+        // Fallback for browsers without closedby support
+        const dialog = document.getElementById('verdictPanel');
+        if (!('closedBy' in HTMLDialogElement.prototype)) {
+          dialog.addEventListener('click', (event) => {
+            if (event.target !== dialog) return;
+            const rect = dialog.getBoundingClientRect();
+            const isDialogContent = (
+              rect.top <= event.clientY &&
+              event.clientY <= rect.top + rect.height &&
+              rect.left <= event.clientX &&
+              event.clientX <= rect.left + rect.width
+            );
+            if (!isDialogContent) dialog.close();
+          });
+        }
     </script>
 </body>
 </html>
