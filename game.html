@@ -1271,7 +1271,7 @@
 
             // Scenario 1: Seller Financed
             sf_loanBalance = loanAmount;
-                        sf_st_checking = get_sf_studentCash();
+            sf_st_checking = CONFIG.buyerCash - CONFIG.downPayment;
             sf_st_invested = 0;
             sf_accruedTax = CONFIG.downPayment * gainRatio * capGainsTaxRate;
             sf_arthurCash = CONFIG.downPayment;
@@ -1284,7 +1284,7 @@
 
             // Scenario 2: Traditional Bank
             bk_loanBalance = loanAmount;
-                        bk_st_checking = get_bk_studentCash();
+            bk_st_checking = CONFIG.buyerCash - CONFIG.downPayment - CONFIG.closingCosts;
             bk_st_invested = 0;
             let arthurGross = CONFIG.salePrice - CONFIG.sellerFees;
             let arthurGain = Math.max(0, arthurGross - CONFIG.taxBasis);
